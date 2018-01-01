@@ -4,26 +4,30 @@ declare module "ass-parser" {
 
     interface ASSScriptInfoSection {
         section: "Script Info";
-        body: ASSSectionBodyStringItem[];
+        body: (ASSSectionBodyStringItem | ASSCommentItem)[];
     }
     interface ASSScriptV4StylesSection {
         section: "V4 Styles";
-        body: (ASSSectionBodyFormatItem | ASSSectionBodyStringDictionaryItem)[];
+        body: (ASSSectionBodyFormatItem | ASSSectionBodyStringDictionaryItem | ASSCommentItem)[];
     }
     interface ASSEventsSection {
         section: "Events";
-        body: (ASSSectionBodyFormatItem | ASSSectionBodyStringDictionaryItem)[];
+        body: (ASSSectionBodyFormatItem | ASSSectionBodyStringDictionaryItem | ASSCommentItem)[];
     }
-    interface ASSSectionBodyStringItem {
+    interface ASSCommentItem {
         type: string;
         value: string;
     }
+    interface ASSSectionBodyStringItem {
+        key: string;
+        value: string;
+    }
     interface ASSSectionBodyFormatItem {
-        type: "Format";
+        key: "Format";
         value: string[];
     }
     interface ASSSectionBodyStringDictionaryItem {
-        type: string;
+        key: string;
         value: { [key: string]: string };
     }
 }
