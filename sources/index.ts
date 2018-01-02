@@ -1,10 +1,8 @@
 import parseASS from "ass-parser";
 import * as ASSParser from "ass-parser";
 
-main();
-
-function main() {
-    const ass = parseASS("abc");
+export function convert(text: string) {
+    const ass = parseASS(text, { comments: true });
 
     const info: WebVTTNote[] = [];
     const styles: (WebVTTStyle | WebVTTNote)[] = [];
@@ -48,18 +46,18 @@ function main() {
     return [...info, ...styles, ...body];
 }
 
-interface WebVTTNote {
+export interface WebVTTNote {
     type: "note"
     value: string;
 }
 
-interface WebVTTStyle {
+export interface WebVTTStyle {
     type: "style";
     value: string;
 }
 
 /** This interface should be largely compatible with VTTCue */
-interface VTTCueData {
+export interface VTTCueData {
     id: string;
     startTime: number;
     endTime: number;
@@ -77,7 +75,7 @@ interface VTTCueData {
     text: string;
 }
 
-interface VTTRegion {
+export interface VTTRegion {
     id: string;
     width: number;
     lines: number;
