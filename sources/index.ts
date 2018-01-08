@@ -1,6 +1,8 @@
 import parseASS from "ass-parser";
 import * as ASSParser from "ass-parser";
 
+const timestampRegex = /(\d{1,}):(\d{2}):(\d{2})\.(\d{2})/;
+
 export function convert(text: string) {
     const ass = parseASS(text, { comments: true });
 
@@ -11,17 +13,17 @@ export function convert(text: string) {
         if (section.section === "Script Info") {
             for (const item of section.body) {
                 if (isASSComment(item)) {
-                    info.push({ type: "note", value: item.value });
+                    info.push({ type: "note", text: item.value });
                 }
                 else {
-                    info.push({ type: "note", value: `${item.key}: ${item.value}` });
+                    info.push({ type: "note", text: `${item.key}: ${item.value}` });
                 }
             }
         }
         else if (section.section === "V4 Styles") {
             for (const item of section.body) {
                 if (isASSComment(item)) {
-                    styles.push({ type: "note", value: item.value });
+                    styles.push({ type: "note", text: item.value });
                 }
                 else if (item.key !== "Format") {
                     styles.push(convertStyle(item));
@@ -31,7 +33,7 @@ export function convert(text: string) {
         else if (section.section === "Events") {
             for (const item of section.body) {
                 if (isASSComment(item)) {
-                    body.push({ type: "note", value: item.value });
+                    body.push({ type: "note", text: item.value });
                 }
                 else if (item.key !== "Format") {
                     body.push(convertEvent(item));
@@ -47,25 +49,58 @@ export function convert(text: string) {
 }
 
 function convertStyle(style: ASSParser.ASSStyle): WebVTTStyle {
-    
+    const vttStyle: WebVTTStyle = { type: "style", name: style.value.Name, dict: {} };
+
+    return vttStyle;
 }
 
 function convertEvent(event: ASSParser.ASSDialogue): VTTCueData {
+    const cue: VTTCueData = {
+        type: "cue",
 
+        id: event.value.Name,
+        startTime: convertTimestamp(event.value.Start),
+        endTime: convertTimestamp(event.value.End),
+        pauseOnExit: false,
+
+        vertical: "",
+        snapToLines: true,
+        line: "auto",
+        lineAlign: "start",
+        position: 50,
+        positionAlign: "auto",
+        size: 100,
+        align: "center",
+        text: event.value.Text // TODO: process ASS specific syntax
+    };
+
+    // TODO: process other properties
+    
+    return cue;
+}
+
+function convertTimestamp(timestamp: string) {
+    const matches = timestamp.match(timestampRegex);
+    return +matches[1] * 3600 + +matches[2] * 60 + +matches[3] + +matches[4] / 100
 }
 
 export interface WebVTTNote {
     type: "note"
-    value: string;
+    text: string;
 }
 
 export interface WebVTTStyle {
     type: "style";
-    value: string;
+    name: string;
+    dict: {
+        [key: string]: string;
+    };
 }
 
 /** This interface should be largely compatible with VTTCue */
 export interface VTTCueData {
+    type: "cue";
+
     id: string;
     startTime: number;
     endTime: number;
@@ -79,7 +114,7 @@ export interface VTTCueData {
     position: number | "auto";
     positionAlign: "line-left" | "center" | "line-right" | "auto";
     size: number;
-    align: "start" | "end" | "left" | "right";
+    align: "start" | "center" | "end" | "left" | "right";
     text: string;
 }
 
@@ -94,6 +129,6 @@ export interface VTTRegion {
     scroll: "" | "up";
 };
 
-function isASSComment(obj: ASSParser.ASSCommentItem | ASSParser.ASSSectionBodyFormatItem | ASSParser.ASSSectionBodyStringItem | ASSParser.ASSSectionBodyStringDictionaryItem): obj is ASSParser.ASSCommentItem {
+function isASSComment(obj: ASSParser.ASSCommentItem | ASSParser.ASSSectionBodyFormatItem | ASSParser.ASSSectionBodyStringItem | ASSParser.ASSStyle | ASSParser.ASSDialogue): obj is ASSParser.ASSCommentItem {
     return "type" in obj && (obj as any).type === "comment";
 }
