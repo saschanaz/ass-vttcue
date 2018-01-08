@@ -5,7 +5,7 @@ export function convert(text: string) {
     const ass = parseASS(text, { comments: true });
 
     const info: WebVTTNote[] = [];
-    const styles: (WebVTTStyle | WebVTTNote)[] = [];
+    const styles: (WebVTTStyle | WebVTTNote)[] = []; // by WebVTT spec, styles cannot appear after cues
     const body: (VTTCueData | WebVTTNote)[] = [];
     for (const section of ass) {
         if (section.section === "Script Info") {
@@ -21,20 +21,20 @@ export function convert(text: string) {
         else if (section.section === "V4 Styles") {
             for (const item of section.body) {
                 if (isASSComment(item)) {
-                    info.push({ type: "note", value: item.value });
+                    styles.push({ type: "note", value: item.value });
                 }
                 else if (item.key !== "Format") {
-                
+                    styles.push(convertStyle(item));
                 }
             }
         }
         else if (section.section === "Events") {
             for (const item of section.body) {
                 if (isASSComment(item)) {
-                    info.push({ type: "note", value: item.value });
+                    body.push({ type: "note", value: item.value });
                 }
                 else if (item.key !== "Format") {
-                
+                    body.push(convertEvent(item));
                 }
             }
         }
@@ -44,6 +44,14 @@ export function convert(text: string) {
     }
 
     return [...info, ...styles, ...body];
+}
+
+function convertStyle(style: ASSParser.ASSStyle): WebVTTStyle {
+    
+}
+
+function convertEvent(event: ASSParser.ASSDialogue): VTTCueData {
+
 }
 
 export interface WebVTTNote {

@@ -8,11 +8,11 @@ declare module "ass-parser" {
     }
     export interface ASSScriptV4StylesSection {
         section: "V4 Styles";
-        body: (ASSSectionBodyFormatItem | ASSSectionBodyStringDictionaryItem | ASSCommentItem)[];
+        body: (ASSSectionBodyFormatItem | ASSStyle | ASSCommentItem)[];
     }
     export interface ASSEventsSection {
         section: "Events";
-        body: (ASSSectionBodyFormatItem | ASSSectionBodyStringDictionaryItem | ASSCommentItem)[];
+        body: (ASSSectionBodyFormatItem | ASSDialogue | ASSCommentItem)[];
     }
     export interface ASSCommentItem {
         type: string;
@@ -26,8 +26,22 @@ declare module "ass-parser" {
         key: "Format";
         value: string[];
     }
-    export interface ASSSectionBodyStringDictionaryItem {
-        key: string;
-        value: { [key: string]: string };
+
+    export interface ASSStyle {
+        key: "Style";
+        value: {
+            [key in ASSStyleFormatKeys]: string;
+        };
     }
+
+    export type ASSStyleFormatKeys = "Name" | "Fontname" | "Fontsize" | "PrimaryColour" | "SecondaryColour" | "TertiaryColour" | "BackColour" | "Bold" | "Italic" | "BorderStyle" | "Outline" | "Shadow" | "Alignment" | "MarginL" | "MarginR" | "MarginV" | "AlphaLevel" | "Encoding";
+
+    export interface ASSDialogue {
+        key: "Dialogue";
+        value: {
+            [key in ASSEventFormatKeys]: string;
+        };
+    }
+
+    export type ASSEventFormatKeys = "Marked" | "Start" | "End" | "Style" | "Name" | "MarginL" | "MarginR" | "MarginV" | "Effect" | "Text";
 }
