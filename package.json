@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/saschanaz/ass-vttcue#readme",
   "dependencies": {
-    "ass-parser": "git+https://github.com/saschanaz/ass-parser.git#patch-1"
+    "ass-parser": "^0.2.0",
   }
 }
