@@ -71,7 +71,8 @@ function convertEvent(event: ASSParser.ASSDialogue): VTTCueData {
         positionAlign: "auto",
         size: 100,
         align: "center",
-        text: event.value.Text // TODO: process ASS specific syntax
+        // TODO: process ASS specific syntax
+        text: event.value.Text.replace(/\\N/g, "\n").replace(/\n{2,}/g, n => Array.from(n).join(' '))
     };
 
     // TODO: process other properties
