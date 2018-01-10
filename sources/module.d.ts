@@ -34,7 +34,7 @@ declare module "ass-parser" {
         };
     }
 
-    export type ASSStyleFormatKeys = "Name" | "Fontname" | "Fontsize" | "PrimaryColour" | "SecondaryColour" | "OutlineColor" | "TertiaryColour" | "BackColour" | "Bold" | "Italic" | "BorderStyle" | "Outline" | "Shadow" | "Alignment" | "MarginL" | "MarginR" | "MarginV" | "AlphaLevel" | "Encoding";
+    export type ASSStyleFormatKeys = "Name" | "Fontname" | "Fontsize" | "PrimaryColour" | "SecondaryColour" | "OutlineColor" | "TertiaryColour" | "BackColour" | "Bold" | "Italic" | "Underline" | "Strikeout" | "ScaleX" | "ScaleY" | "Spacing" | "Angle" |"BorderStyle" | "Outline" | "Shadow" | "Alignment" | "MarginL" | "MarginR" | "MarginV" | "AlphaLevel" | "Encoding";
 
     export interface ASSDialogue {
         key: "Dialogue";

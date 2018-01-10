@@ -8,7 +8,7 @@ export function convert(text: string) {
 
     const info: WebVTTNote[] = [];
     let height: number;
-    const styles: (WebVTTStyle | WebVTTNote)[] = []; // by WebVTT spec, styles cannot appear after cues
+    const styles: (WebVTTStyle | WebVTTNote)[] = []; // WebVTT spec prevents styles from appearing after cues
     const body: (VTTCueData | WebVTTNote)[] = [];
     for (const section of ass) {
         if (section.section === "Script Info") {
@@ -68,10 +68,35 @@ function convertStyle(style: ASSParser.ASSStyle, playHeight: number): WebVTTStyl
     if (style.value.PrimaryColour) {
         styleObject.color = convertColor(style.value.PrimaryColour);
     }
-    if (style.value.OutlineColor || style.value.TertiaryColour) {
-        styleObject.borderColor = convertColor(style.value.OutlineColor || style.value.TertiaryColour);
+    if (style.value.BackColour) {
+        // text stroke is not supported because of WebVTT CSS restriction
+        // https://w3c.github.io/webvtt/#the-cue-pseudo-element
+        // text-shadow does not support individual color property
+        // so this should be processed in special way
+        vttStyle.dict['--text-shadow-color'] = convertColor(style.value.BackColour);
     }
-
+    if (style.value.Bold) {
+        styleObject.fontWeight = "bold";
+    }
+    if (style.value.Italic) {
+        styleObject.fontStyle = "italic";
+    }
+    if (style.value.Underline) {
+        styleObject.textDecoration = "underline";
+    }
+    if (style.value.Strikeout) {
+        // Note that CSS does not support underline and strikeout together
+        styleObject.textDecoration = "line-through";
+    }
+    // ScaleX, ScaleY, Spacing, Angle, Outline are not supported because of WebVTT CSS restriction
+    // https://w3c.github.io/webvtt/#the-cue-pseudo-element
+    if (style.value.BorderStyle === "1") {
+        if (style.value.Shadow) {
+            // TODO: this is not an absolute value and rather arbitrary, but what happens we use px?
+            // Will a browser zoom it when needed?
+            styleObject.textShadow = `${+style.value.Shadow / 36}em`
+        }
+    }
 
     return vttStyle;
 }
@@ -98,13 +123,13 @@ function convertEvent(event: ASSParser.ASSDialogue): VTTCueData {
     };
 
     // TODO: process other properties
-    
+
     return cue;
 }
 
 function convertTimestamp(timestamp: string) {
     const matches = timestamp.match(timestampRegex);
-    return +matches[1] * 3600 + +matches[2] * 60 + +matches[3] + +matches[4] / 100
+    return +matches[1] * 3600 + +matches[2] * 60 + +matches[3] + +matches[4] / 100;
 }
 
 function convertColor(color: string) {
