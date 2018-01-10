@@ -65,6 +65,13 @@ function convertStyle(style: ASSParser.ASSStyle, playHeight: number): WebVTTStyl
     if (style.value.Fontsize) {
         styleObject.fontSize = `${+style.value.Fontsize / playHeight * 100}vh`; // assuming Fontsize uses px
     }
+    if (style.value.PrimaryColour) {
+        styleObject.color = convertColor(style.value.PrimaryColour);
+    }
+    if (style.value.OutlineColor || style.value.TertiaryColour) {
+        styleObject.borderColor = convertColor(style.value.OutlineColor || style.value.TertiaryColour);
+    }
+
 
     return vttStyle;
 }
@@ -98,6 +105,28 @@ function convertEvent(event: ASSParser.ASSDialogue): VTTCueData {
 function convertTimestamp(timestamp: string) {
     const matches = timestamp.match(timestampRegex);
     return +matches[1] * 3600 + +matches[2] * 60 + +matches[3] + +matches[4] / 100
+}
+
+function convertColor(color: string) {
+    let num = color.startsWith("&H") ? parseInt(color, 16) : +color;
+    if (num < 0) {
+        // some tools generates negative integer if the value >= 2 ** 31
+        num += 2 ** 31;
+    }
+    // parse as (A)BGR
+    const R = num & 0xFF;
+    const G = (num & 0xFF00) >> 8;
+    const B = (num & 0xFF0000) >> 16;
+    // 1 by default. Note that this also converts explicit 0 value to 1
+    // (It seems some real world examples uses explicit 0 values with unknown reason)
+    const A = (num & 0xFF0000) >> 24 || 255;
+    if (A === 255) {
+        return `#${R.toString(16)}${G.toString(16)}${B.toString(16)}`;
+    }
+    else {
+        // MSEdge 16 does not support #RGBA
+        return `rgba(${R}, ${G}, ${B}, ${A / 255})`;
+    }
 }
 
 export interface WebVTTNote {
