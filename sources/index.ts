@@ -24,7 +24,7 @@ export function convert(text: string) {
                 }
             }
         }
-        else if (section.section === "V4 Styles") {
+        else if (section.section === "V4 Styles" || section.section === "V4+ Styles") {
             if (!height) {
                 throw new Error("Header didn't include PlayResY info")
             }
@@ -63,7 +63,7 @@ function convertStyle(style: ASSParser.ASSStyle, playHeight: number): WebVTTStyl
         styleObject.fontFamily = style.value.Fontname;
     }
     if (style.value.Fontsize) {
-        styleObject.fontSize = `${+style.value.Fontsize / playHeight * 100}vh`; // assuming Fontsize uses px
+        styleObject.fontSize = `${(+style.value.Fontsize / playHeight * 100).toFixed(2)}vh`; // assuming Fontsize uses px
     }
     if (style.value.PrimaryColour) {
         styleObject.color = convertColor(style.value.PrimaryColour);

@@ -7,7 +7,7 @@ declare module "ass-parser" {
         body: (ASSSectionBodyStringItem | ASSCommentItem)[];
     }
     export interface ASSScriptV4StylesSection {
-        section: "V4 Styles";
+        section: "V4 Styles" | "V4+ Styles";
         body: (ASSSectionBodyFormatItem | ASSStyle | ASSCommentItem)[];
     }
     export interface ASSEventsSection {
