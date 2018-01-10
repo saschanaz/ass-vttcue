@@ -7,6 +7,7 @@ export function convert(text: string) {
     const ass = parseASS(text, { comments: true });
 
     const info: WebVTTNote[] = [];
+    let height: number;
     const styles: (WebVTTStyle | WebVTTNote)[] = []; // by WebVTT spec, styles cannot appear after cues
     const body: (VTTCueData | WebVTTNote)[] = [];
     for (const section of ass) {
@@ -17,16 +18,22 @@ export function convert(text: string) {
                 }
                 else {
                     info.push({ type: "note", text: `${item.key}: ${item.value}` });
+                    if (item.key === "PlayResY") {
+                        height = +item.value;
+                    }
                 }
             }
         }
         else if (section.section === "V4 Styles") {
+            if (!height) {
+                throw new Error("Header didn't include PlayResY info")
+            }
             for (const item of section.body) {
                 if (isASSComment(item)) {
                     styles.push({ type: "note", text: item.value });
                 }
                 else if (item.key !== "Format") {
-                    styles.push(convertStyle(item));
+                    styles.push(convertStyle(item, height));
                 }
             }
         }
@@ -48,8 +55,16 @@ export function convert(text: string) {
     return [...info, ...styles, ...body];
 }
 
-function convertStyle(style: ASSParser.ASSStyle): WebVTTStyle {
+function convertStyle(style: ASSParser.ASSStyle, playHeight: number): WebVTTStyle {
     const vttStyle: WebVTTStyle = { type: "style", name: style.value.Name, dict: {} };
+    const styleObject = vttStyle.dict as any as CSSStyleDeclaration;
+
+    if (style.value.Fontname) {
+        styleObject.fontFamily = style.value.Fontname;
+    }
+    if (style.value.Fontsize) {
+        styleObject.fontSize = `${+style.value.Fontsize / playHeight * 100}vh`; // assuming Fontsize uses px
+    }
 
     return vttStyle;
 }
